@@ -5,19 +5,21 @@ import {
   Loading,
   Page,
   Text,
+  Textarea,
   useInput,
 } from "@geist-ui/core";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect } from "react";
 import { getStorage } from "firebase/storage";
 import { doc, getFirestore, setDoc } from "firebase/firestore";
 import { useUploadFile } from "react-firebase-hooks/storage";
 import { useDocument } from "react-firebase-hooks/firestore";
 import appStyles from "../../styles/App.module.css";
 import { daysUntil } from "../../lib/dateutils";
+import ReactMarkdown from "react-markdown";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -29,6 +31,7 @@ export default function App() {
   const [uploadFile, uploading, snapshot, fileError] = useUploadFile();
   const title = useInput("");
   const due = useInput("");
+  const md = useInput("");
 
   const [courseworkData, courseworkLoading, error] = useDocument(
     doc(getFirestore(app), `courseworks/${user?.uid}`),
@@ -106,6 +109,14 @@ export default function App() {
                   {courseworkData.data().createdAt.toDate().toLocaleString()}
                 </Text>
               </Text>
+              <div className={appStyles.layout}>
+                <div>
+                  <Textarea height="15em" width="100%" {...md.bindings} />
+                </div>
+                <div className={appStyles.md}>
+                  <ReactMarkdown>{md.state}</ReactMarkdown>
+                </div>
+              </div>
             </div>
           ) : (
             <div>
