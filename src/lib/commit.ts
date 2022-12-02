@@ -4,10 +4,7 @@ import {
   StorageReference,
   UploadMetadata,
   UploadResult,
-  UploadTask,
 } from "firebase/storage";
-
-import { app } from "./firebase";
 
 type SubmittedCommitData = {
   overview: string;

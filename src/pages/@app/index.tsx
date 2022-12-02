@@ -1,13 +1,23 @@
-import { Button, Dot, Loading, Page } from "@geist-ui/core";
+import {
+  Button,
+  Dot,
+  Input,
+  Loading,
+  Page,
+  Text,
+  useInput,
+} from "@geist-ui/core";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
 import { useUploadFile } from "react-firebase-hooks/storage";
-import { commit } from "../../lib/commit";
+import { useDocument } from "react-firebase-hooks/firestore";
+import appStyles from "../../styles/App.module.css";
+import { daysUntil } from "../../lib/dateutils";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -16,7 +26,16 @@ const storage = getStorage(app);
 export default function App() {
   const router = useRouter();
   const [user, userLoading, userError] = useAuthState(auth);
-  const [uploadFile, uploading, snapshot, error] = useUploadFile();
+  const [uploadFile, uploading, snapshot, fileError] = useUploadFile();
+  const title = useInput("");
+  const due = useInput("");
+
+  const [courseworkData, courseworkLoading, error] = useDocument(
+    doc(getFirestore(app), `courseworks/${user?.uid}`),
+    {
+      snapshotListenOptions: { includeMetadataChanges: true },
+    }
+  );
 
   // Redirect user if not logged in
   useEffect(() => {
@@ -34,33 +53,87 @@ export default function App() {
     );
   }
 
+  function createCoursework(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!courseworkData) {
+      return;
+    }
+
+    if (title.state === "" || due.state === "") {
+      return;
+    }
+
+    // already created
+    if (courseworkData.exists()) {
+      return;
+    }
+
+    // Create document
+    const courseworkRef = doc(firestore, `courseworks/${user?.uid}`);
+
+    // set data
+    setDoc(courseworkRef, {
+      title: title.state,
+      due: new Date(due.state),
+      createdAt: new Date(),
+    });
+  }
+
   return (
     <>
-      {userLoading || !user ? (
+      {userLoading || !user || courseworkLoading ? (
         <Page>
           <Loading>Loading user info</Loading>
         </Page>
       ) : (
         <Page>
           <h1>Hi, {user.displayName}!</h1>
-          <h2>Your most recent commit was on</h2>
-          <Button
-            onClick={() =>
-              commit(
-                {
-                  date: new Date(),
-                  images: [],
-                  message: "hello world",
-                  overview: "test document",
-                },
-                user,
-                firestore,
-                uploadFile
-              )
-            }
-          >
-            Add doc
-          </Button>
+          {courseworkData && courseworkData.exists() ? (
+            <div>
+              <Text>
+                Title: <Text b>{courseworkData.data().title}</Text>
+              </Text>
+              <Text>
+                Is due in:{" "}
+                <Text b>
+                  {daysUntil(courseworkData.data().due.toDate())} days
+                </Text>
+              </Text>
+              <Text>
+                Started at:{" "}
+                <Text b>
+                  {courseworkData.data().createdAt.toDate().toLocaleString()}
+                </Text>
+              </Text>
+            </div>
+          ) : (
+            <div>
+              <Text>You haven&apos;t yet created your coursework</Text>
+              <form className={appStyles.form} onSubmit={createCoursework}>
+                <Input
+                  placeholder="e.g. OSCAR Radio"
+                  width="100%"
+                  {...title.bindings}
+                >
+                  <Text>Title</Text>
+                </Input>
+                <Input
+                  placeholder="No Date Selected"
+                  htmlType="date"
+                  width="100%"
+                  {...due.bindings}
+                >
+                  <Text>Due Date</Text>
+                </Input>
+                <br />
+                <br />
+                <Button type="secondary" htmlType="submit">
+                  Start Coursework
+                </Button>
+              </form>
+            </div>
+          )}
         </Page>
       )}
     </>
