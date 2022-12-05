@@ -29,7 +29,7 @@ import commitStyles from "../../styles/Commit.module.css";
 import { createComponent, updateComponent } from "../../lib/commit";
 import { useDocument } from "react-firebase-hooks/firestore";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
-import { EditableAndFirebase } from "../../components/editablefield";
+import { EditableFieldFirebase } from "../../components/editablefield";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -94,7 +94,7 @@ export default function Component() {
         </Page>
       ) : (
         <Page>
-          <EditableAndFirebase
+          <EditableFieldFirebase
             componentData={componentData}
             dataKey="title"
             componentId={componentId as string}
@@ -103,7 +103,7 @@ export default function Component() {
             user={user}
             tagName="h1"
           />
-          <EditableAndFirebase
+          <EditableFieldFirebase
             componentData={componentData}
             dataKey="description"
             componentId={componentId as string}
@@ -112,7 +112,16 @@ export default function Component() {
             user={user}
             tagName="h3"
           />
-          <h2>{componentData.data().description}</h2>
+          <span>Last edited _____</span>
+          <EditableFieldFirebase
+            componentData={componentData}
+            dataKey="content"
+            componentId={componentId as string}
+            firestore={firestore}
+            storage={storage}
+            user={user}
+            tagName="p"
+          />
         </Page>
       )}
     </>
