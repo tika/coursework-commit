@@ -1,5 +1,6 @@
 import { User } from "firebase/auth";
 import { addDoc, collection, doc, Firestore, setDoc } from "firebase/firestore";
+import { FirebaseStorage, ref, uploadBytesResumable } from "firebase/storage";
 
 type createCourseworkData = {
   title: string;
@@ -33,15 +34,33 @@ type createComponentData = {
 };
 
 // returns a reference to the component document
-export function createComponent(
+export async function createComponent(
   data: createComponentData,
   user: User,
-  firestore: Firestore
+  firestore: Firestore,
+  storage: FirebaseStorage
 ) {
+  const { images, ...meta } = data;
+
   const ref = addDoc(
     collection(firestore, `courseworks/${user.uid}/components`),
-    data
+    meta
   );
 
+  // upload images
+  const files = await Promise.all(
+    images.map((img) => uploadImg(img, user, storage))
+  );
+
+  console.log(files);
+
   return ref;
+}
+
+async function uploadImg(img: File, user: User, storage: FirebaseStorage) {
+  const storageRef = ref(storage, `courseworks/${user.uid}/${img.name}`);
+
+  const docRef = await uploadBytesResumable(storageRef, img);
+
+  return Promise.resolve(docRef.metadata.fullPath);
 }

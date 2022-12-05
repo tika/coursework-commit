@@ -17,9 +17,11 @@ import { useDocument } from "react-firebase-hooks/firestore";
 import appStyles from "../../styles/App.module.css";
 import { daysUntil } from "../../lib/dateutils";
 import { createCourseworkSection } from "../../lib/commit";
+import { getStorage } from "firebase/storage";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
+const storage = getStorage();
 
 export default function App() {
   const router = useRouter();

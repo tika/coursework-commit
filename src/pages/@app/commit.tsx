@@ -12,7 +12,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
-import { FormEvent, useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
@@ -29,6 +29,7 @@ export default function Commit() {
   const title = useInput("");
   const description = useInput("");
   const content = useInput("");
+  const [imgs, setImgs] = useState<File[]>([]);
 
   // Redirect user if not logged in
   useEffect(() => {
@@ -57,10 +58,10 @@ export default function Commit() {
       title: title.state,
       description: description.state,
       content: content.state,
-      images: [],
+      images: imgs,
     };
 
-    createComponent(newCoursework, user, firestore);
+    createComponent(newCoursework, user, firestore, storage);
     console.log("hello");
   }
 
@@ -88,6 +89,13 @@ export default function Commit() {
                 </ReactMarkdown>
               </div>
             </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setImgs(e.target.files !== null ? [e.target.files[0]] : [])
+              }
+            ></input>
             <Button htmlType="submit">Create</Button>
           </form>
         </Page>
