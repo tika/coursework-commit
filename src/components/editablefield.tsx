@@ -54,9 +54,9 @@ export function EditableAndFirebase(props: {
 
   useEffect(() => {
     if (props.componentData && props.componentData.exists()) {
-      setText(props.componentData.data().title);
+      setText(props.componentData.data()[props.dataKey]);
     }
-  }, [props.componentData]);
+  }, [props.componentData, props.dataKey]);
 
   async function submit(raw: string) {
     const data: any = {}; // sorry folks

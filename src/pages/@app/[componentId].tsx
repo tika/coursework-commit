@@ -103,6 +103,15 @@ export default function Component() {
             user={user}
             tagName="h1"
           />
+          <EditableAndFirebase
+            componentData={componentData}
+            dataKey="description"
+            componentId={componentId as string}
+            firestore={firestore}
+            storage={storage}
+            user={user}
+            tagName="h3"
+          />
           <h2>{componentData.data().description}</h2>
         </Page>
       )}
