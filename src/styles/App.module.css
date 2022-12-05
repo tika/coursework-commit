@@ -1,0 +1,11 @@
+.components {
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+.components > div {
+  flex: 1 1 30%;
+  width: 20%;
+  max-width: 25em;
+}

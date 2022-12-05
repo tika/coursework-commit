@@ -1,5 +1,6 @@
 import {
   Button,
+  Card,
   Dot,
   Input,
   Loading,
@@ -12,8 +13,8 @@ import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
 import { FormEvent, useEffect } from "react";
-import { doc, getFirestore } from "firebase/firestore";
-import { useDocument } from "react-firebase-hooks/firestore";
+import { collection, doc, getFirestore } from "firebase/firestore";
+import { useCollection, useDocument } from "react-firebase-hooks/firestore";
 import appStyles from "../../styles/App.module.css";
 import { daysUntil } from "../../lib/dateutils";
 import { createCourseworkSection } from "../../lib/commit";
@@ -28,13 +29,16 @@ export default function App() {
   const [user, userLoading, userError] = useAuthState(auth);
   const title = useInput("");
   const due = useInput("");
-  const md = useInput("");
 
   const [courseworkData, courseworkLoading, error] = useDocument(
     doc(getFirestore(app), `courseworks/${user?.uid}`),
     {
       snapshotListenOptions: { includeMetadataChanges: true },
     }
+  );
+
+  const [componentsData, componentsLoading, componentsError] = useCollection(
+    collection(getFirestore(app), `courseworks/${user?.uid}/components`)
   );
 
   // Redirect user if not logged in
@@ -49,6 +53,15 @@ export default function App() {
       <Page>
         <Dot type="error" />
         {userError.name}: {userError.message}
+      </Page>
+    );
+  }
+
+  if (componentsError) {
+    return (
+      <Page>
+        <Dot type="error" />
+        {componentsError.name}: {componentsError.message}
       </Page>
     );
   }
@@ -84,7 +97,7 @@ export default function App() {
 
   return (
     <>
-      {userLoading || !user || courseworkLoading ? (
+      {userLoading || !user || courseworkLoading || !componentsData ? (
         <Page>
           <Loading>Loading user info</Loading>
         </Page>
@@ -108,9 +121,20 @@ export default function App() {
                   {courseworkData.data().createdAt.toDate().toLocaleString()}
                 </Text>
               </Text>
-              <div className={appStyles.layout}>
-                <Text h3>Your commits</Text>
-                <div></div>
+              <div>
+                <Text h3>Your components</Text>
+                <div className={appStyles.components}>
+                  {componentsData.docs.map((doc) => (
+                    <Card
+                      key={doc.id}
+                      hoverable
+                      onClick={() => router.push(`/@app/${doc.id}`)}
+                    >
+                      <Text h3>{doc.data().title}</Text>
+                      <Text>{doc.data().description}</Text>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
