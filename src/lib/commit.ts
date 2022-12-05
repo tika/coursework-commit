@@ -1,5 +1,12 @@
 import { User } from "firebase/auth";
-import { addDoc, collection, doc, Firestore, setDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  Firestore,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { FirebaseStorage, ref, uploadBytesResumable } from "firebase/storage";
 
 type createCourseworkData = {
@@ -63,4 +70,24 @@ async function uploadImg(img: File, user: User, storage: FirebaseStorage) {
   const docRef = await uploadBytesResumable(storageRef, img);
 
   return Promise.resolve(docRef.metadata.fullPath);
+}
+
+// update component
+export async function updateComponent(
+  componentId: string,
+  data: Partial<createComponentData>,
+  user: User,
+  firestore: Firestore,
+  storage: FirebaseStorage
+) {
+  const { images, ...meta } = data;
+
+  const ref = updateDoc(
+    doc(firestore, `courseworks/${user.uid}/components/${componentId}`),
+    meta
+  );
+
+  // todo: upload images
+
+  return ref;
 }

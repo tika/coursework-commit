@@ -12,12 +12,23 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
-import { FormEvent, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  FocusEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { doc, getFirestore } from "firebase/firestore";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import commitStyles from "../../styles/Commit.module.css";
-import { createComponent } from "../../lib/commit";
+import { createComponent, updateComponent } from "../../lib/commit";
+import { useDocument } from "react-firebase-hooks/firestore";
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -27,6 +38,16 @@ export default function Component() {
   const router = useRouter();
   const { componentId } = router.query;
   const [user, userLoading, userError] = useAuthState(auth);
+  const [componentData, componentLoading, componentError] = useDocument(
+    doc(getFirestore(app), `courseworks/${user?.uid}/components/${componentId}`)
+  );
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (componentData && componentData.data() && componentData.exists()) {
+      setText(componentData.data().title);
+    }
+  }, [componentData]);
 
   if (userError) {
     return (
@@ -37,15 +58,48 @@ export default function Component() {
     );
   }
 
+  if (componentData && !componentData.exists()) {
+    router.push("/@app");
+    return;
+  }
+
+  const handleChange = (evt: ContentEditableEvent) => {
+    setText(evt.target.value);
+  };
+
+  const handleBlur = async (e: FocusEvent) => {
+    if (!user) return;
+
+    console.log(
+      await updateComponent(
+        componentId as string,
+        { title: e.target.innerHTML },
+        user,
+        firestore,
+        storage
+      )
+    );
+  };
+
   return (
     <>
-      {userLoading || !user ? (
+      {userLoading ||
+      !user ||
+      !componentData ||
+      componentLoading ||
+      !componentData.data() ? (
         <Page>
           <Loading>Loading user info</Loading>
         </Page>
       ) : (
         <Page>
-          <h1>Component id = {componentId}</h1>
+          <ContentEditable
+            html={text}
+            onBlur={handleBlur}
+            onChange={handleChange}
+            tagName="h1"
+          />
+          <h2>{componentData.data().description}</h2>
         </Page>
       )}
     </>
