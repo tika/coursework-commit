@@ -1,38 +1,47 @@
 import { User } from "firebase/auth";
 import { addDoc, collection, doc, Firestore, setDoc } from "firebase/firestore";
-import {
-  StorageReference,
-  UploadMetadata,
-  UploadResult,
-} from "firebase/storage";
 
-type SubmittedCommitData = {
-  overview: string;
-  message: string;
-  images: File[];
-  date: Date;
+type createCourseworkData = {
+  title: string;
+  due: Date;
 };
 
-export async function commit(
-  data: SubmittedCommitData,
+// returns a reference to the coursework document
+export function createCourseworkSection(
+  data: createCourseworkData,
   user: User,
-  firestore: Firestore,
-  uploadFiles: (
-    storageRef: StorageReference,
-    data: Blob | Uint8Array | ArrayBuffer,
-    metadata?: UploadMetadata | undefined
-  ) => Promise<UploadResult | undefined>
+  firestore: Firestore
 ) {
-  // 1. upload to collection
-  const coursework = await setDoc(doc(firestore, `courseworks/${user.uid}`), {
-    title: "Computing coursework",
-    started: Date(),
+  // Create document
+  const courseworkRef = doc(firestore, `courseworks/${user.uid}`);
+
+  // set data
+  setDoc(courseworkRef, {
+    title: data.title,
+    due: data.due,
+    createdAt: new Date(),
   });
 
-  const courseworks = collection(firestore, `courseworks/${user.uid}/commits`);
+  return courseworkRef;
+}
 
-  const t = await addDoc(courseworks, {
-    message: data.message,
-    overview: data.overview,
-  });
+type createComponentData = {
+  title: string;
+  description: string;
+  content: string; // .md
+  images: File[];
+};
+
+// returns a reference to the component document
+export function createComponent(
+  data: createComponentData,
+  user: User,
+  firestore: Firestore
+) {
+  const ref = addDoc(
+    collection(firestore, `courseworks/${user.uid}/components`),
+    data
+  );
+
+  return ref;
 }

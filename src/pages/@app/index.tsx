@@ -5,7 +5,6 @@ import {
   Loading,
   Page,
   Text,
-  Textarea,
   useInput,
 } from "@geist-ui/core";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -13,22 +12,18 @@ import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
 import { FormEvent, useEffect } from "react";
-import { getStorage } from "firebase/storage";
-import { doc, getFirestore, setDoc } from "firebase/firestore";
-import { useUploadFile } from "react-firebase-hooks/storage";
+import { doc, getFirestore } from "firebase/firestore";
 import { useDocument } from "react-firebase-hooks/firestore";
 import appStyles from "../../styles/App.module.css";
 import { daysUntil } from "../../lib/dateutils";
-import ReactMarkdown from "react-markdown";
+import { createCourseworkSection } from "../../lib/commit";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
-const storage = getStorage(app);
 
 export default function App() {
   const router = useRouter();
   const [user, userLoading, userError] = useAuthState(auth);
-  const [uploadFile, uploading, snapshot, fileError] = useUploadFile();
   const title = useInput("");
   const due = useInput("");
   const md = useInput("");
@@ -72,15 +67,17 @@ export default function App() {
       return;
     }
 
-    // Create document
-    const courseworkRef = doc(firestore, `courseworks/${user?.uid}`);
+    // no user
+    if (!user) {
+      return;
+    }
 
-    // set data
-    setDoc(courseworkRef, {
-      title: title.state,
-      due: new Date(due.state),
-      createdAt: new Date(),
-    });
+    // Create document
+    createCourseworkSection(
+      { title: title.state, due: new Date(due.state) },
+      user,
+      firestore
+    );
   }
 
   return (
@@ -110,12 +107,8 @@ export default function App() {
                 </Text>
               </Text>
               <div className={appStyles.layout}>
-                <div>
-                  <Textarea height="15em" width="100%" {...md.bindings} />
-                </div>
-                <div className={appStyles.md}>
-                  <ReactMarkdown>{md.state}</ReactMarkdown>
-                </div>
+                <Text h3>Your commits</Text>
+                <div></div>
               </div>
             </div>
           ) : (
