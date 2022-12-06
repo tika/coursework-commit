@@ -31,6 +31,7 @@ export default function App() {
   const title = useInput("");
   const due = useInput("");
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [deleteMode, setDeleteMode] = useState(false);
 
   const [courseworkData, courseworkLoading, error] = useDocument(
     doc(getFirestore(app), `courseworks/${user?.uid}`),
@@ -42,6 +43,26 @@ export default function App() {
   const [componentsData, componentsLoading, componentsError] = useCollection(
     collection(getFirestore(app), `courseworks/${user?.uid}/components`)
   );
+
+  function keydown(e: KeyboardEvent) {
+    if (e.shiftKey) {
+      setDeleteMode(true);
+    }
+  }
+
+  function keyup(e: KeyboardEvent) {
+    setDeleteMode(false);
+  }
+
+  useEffect(() => {
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("keyup", keyup);
+    return () => window.removeEventListener("keyup", keyup);
+  }, []);
 
   // Redirect user if not logged in
   useEffect(() => {
@@ -124,15 +145,21 @@ export default function App() {
                 </Text>
               </Text>
               <div>
-                <Text h3>Your components</Text>
+                <Text h3>
+                  Your components{" "}
+                  {deleteMode && (
+                    <Text type="error" span>
+                      (delete mode)
+                    </Text>
+                  )}
+                </Text>
                 <div className={appStyles.components}>
                   {componentsData.docs.map((doc, i) => (
                     <Card
                       key={doc.id}
                       hoverable
                       onClick={(evt) => {
-                        if (evt.shiftKey) {
-                          // delete component
+                        if (deleteMode) {
                           deleteComponent(doc.id, user, firestore);
                         } else {
                           router.push(`/@app/${doc.id}`);
