@@ -11,9 +11,17 @@
   align-items: center;
   border-radius: 1em;
   padding: 1em;
-  margin-top: 5em;
+  margin-top: 2em;
 }
 
 .header > h3 {
   margin: 0;
+}
+
+.md {
+  /* white-space: pre-wrap; */
+}
+
+.md > p {
+  margin: 5px 0px;
 }

@@ -2,8 +2,10 @@ import {
   Button,
   Dot,
   Input,
+  Link,
   Loading,
   Page,
+  Spacer,
   Text,
   Textarea,
   useInput,
@@ -34,6 +36,7 @@ import {
   EditableFieldMarkdownFirebase,
 } from "../../components/editablefield";
 import { formatDate } from "../../lib/dateutils";
+import { ArrowLeft } from "@geist-ui/icons";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -73,6 +76,16 @@ export default function Component() {
         </Page>
       ) : (
         <Page>
+          <div>
+            <Link
+              href="/@app"
+              color
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              <ArrowLeft scale={0.5} />
+              Go back
+            </Link>
+          </div>
           <EditableFieldFirebase
             componentData={componentData}
             dataKey="title"

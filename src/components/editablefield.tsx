@@ -3,8 +3,8 @@ import { Eye, PenTool } from "@geist-ui/icons";
 import { User } from "firebase/auth";
 import { DocumentData, Firestore } from "firebase/firestore";
 import { FirebaseStorage } from "firebase/storage";
-import { useEffect, useState } from "react";
-import ContentEditable from "react-contenteditable";
+import React, { useEffect, useState } from "react";
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { updateComponent } from "../lib/commit";
 import editablefieldStyles from "../styles/EditableField.module.css";
@@ -37,13 +37,26 @@ export function EditableArea(props: {
   onFinish?: (value: string) => void;
   className?: string;
 }) {
+  function onChange(evt: ContentEditableEvent) {
+    const newVal = evt.target.value;
+
+    // call set state
+    props.state[1](newVal);
+  }
+
   return (
     <ContentEditable
       html={props.state[0]}
       onBlur={(evt) => props.onFinish && props.onFinish(evt.target.innerHTML)}
-      onChange={(evt) => props.state[1](evt.target.value)}
-      tagName="p"
+      onChange={(evt) => onChange(evt)}
+      tagName="pre"
       className={props.className + " " + editablefieldStyles.component}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          document.execCommand("insertLineBreak");
+          event.preventDefault();
+        }
+      }}
     />
   );
 }
@@ -137,11 +150,18 @@ export function EditableFieldMarkdownFirebase(props: {
       props.storage
     );
   }
+  function nl2br(str: string, is_xhtml?: boolean) {
+    var breakTag =
+      is_xhtml || typeof is_xhtml === "undefined" ? "<br />" : "<br>";
+    return (str + "")
+      .replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, "$1" + breakTag + "$2")
+      .replaceAll("<br />", "\n");
+  }
 
   return (
     <div>
       <div className={editablefieldStyles.header}>
-        <h3>Content</h3>
+        <h3>Content ({previewMode ? "previewing" : "editing"})</h3>
         <Button
           onClick={() => setPreviewMode(!previewMode)}
           icon={previewMode ? <PenTool /> : <Eye />}
@@ -151,11 +171,8 @@ export function EditableFieldMarkdownFirebase(props: {
       </div>
       {previewMode ? (
         <>
-          <ReactMarkdown>
-            {text
-              .replaceAll("<div>", "")
-              .replaceAll("</div>", "")
-              .replaceAll("<br>", "\n")}
+          <ReactMarkdown className={editablefieldStyles.md}>
+            {nl2br(text)}
           </ReactMarkdown>
         </>
       ) : (
