@@ -64,6 +64,11 @@ export function EditableFieldFirebase(props: {
   }, [props.componentData, props.dataKey]);
 
   async function submit(raw: string) {
+    // if nothing's been updated
+    if (raw === text) {
+      return;
+    }
+
     const data: any = {}; // sorry folks
 
     data[props.dataKey] = raw;
