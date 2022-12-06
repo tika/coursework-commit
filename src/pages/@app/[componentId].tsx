@@ -29,7 +29,10 @@ import commitStyles from "../../styles/Commit.module.css";
 import { createComponent, updateComponent } from "../../lib/commit";
 import { useDocument } from "react-firebase-hooks/firestore";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
-import { EditableFieldFirebase } from "../../components/editablefield";
+import {
+  EditableFieldFirebase,
+  EditableFieldMarkdownFirebase,
+} from "../../components/editablefield";
 import { formatDate } from "../../lib/dateutils";
 
 const auth = getAuth(app);
@@ -91,7 +94,7 @@ export default function Component() {
           <span>
             Last edited {formatDate(componentData.data().lastUpdated)} ago
           </span>
-          <EditableFieldFirebase
+          <EditableFieldMarkdownFirebase
             componentData={componentData}
             dataKey="content"
             componentId={componentId as string}

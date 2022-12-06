@@ -1,8 +1,11 @@
+import { Button } from "@geist-ui/core";
+import { Eye } from "@geist-ui/icons";
 import { User } from "firebase/auth";
 import { DocumentData, Firestore } from "firebase/firestore";
 import { FirebaseStorage } from "firebase/storage";
 import { useEffect, useState } from "react";
 import ContentEditable from "react-contenteditable";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { updateComponent } from "../lib/commit";
 import editablefieldStyles from "../styles/EditableField.module.css";
 
@@ -94,5 +97,76 @@ export function EditableFieldFirebase(props: {
         />
       )}
     </>
+  );
+}
+
+// markdown view
+export function EditableFieldMarkdownFirebase(props: {
+  componentId: string;
+  tagName: "h1" | "h2" | "h3" | "span" | "p";
+  user: User;
+  firestore: Firestore;
+  componentData: DocumentData;
+  storage: FirebaseStorage;
+  dataKey: string;
+}) {
+  const [text, setText] = useState("");
+  const [previewMode, setPreviewMode] = useState(false);
+
+  useEffect(() => {
+    if (props.componentData && props.componentData.exists()) {
+      setText(props.componentData.data()[props.dataKey]);
+    }
+  }, [props.componentData, props.dataKey]);
+
+  async function submit(raw: string) {
+    // if nothing's been updated
+    if (raw === text) {
+      return;
+    }
+
+    const data: any = {}; // sorry folks
+
+    data[props.dataKey] = raw;
+
+    await updateComponent(
+      props.componentId,
+      data,
+      props.user,
+      props.firestore,
+      props.storage
+    );
+  }
+
+  return (
+    <div>
+      <div>
+        <Button onClick={() => setPreviewMode(!previewMode)} icon={<Eye />}>
+          {previewMode ? "Edit" : "Preview"}
+        </Button>
+      </div>
+      {previewMode ? (
+        <>
+          <ReactMarkdown>
+            {text
+              .replaceAll("<div>", "")
+              .replaceAll("</div>", "")
+              .replaceAll("<br>", "\n")}
+          </ReactMarkdown>
+        </>
+      ) : (
+        <>
+          {props.tagName === "p" ? (
+            <EditableArea state={[text, setText]} onFinish={submit} />
+          ) : (
+            <EditableInline
+              tagName={props.tagName}
+              state={[text, setText]}
+              onFinish={submit}
+            />
+          )}
+        </>
+      )}
+    </div>
   );
 }
