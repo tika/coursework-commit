@@ -30,6 +30,7 @@ import { createComponent, updateComponent } from "../../lib/commit";
 import { useDocument } from "react-firebase-hooks/firestore";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { EditableFieldFirebase } from "../../components/editablefield";
+import { formatDate } from "../../lib/dateutils";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -42,13 +43,6 @@ export default function Component() {
   const [componentData, componentLoading, componentError] = useDocument(
     doc(getFirestore(app), `courseworks/${user?.uid}/components/${componentId}`)
   );
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    if (componentData && componentData.data() && componentData.exists()) {
-      setText(componentData.data().title);
-    }
-  }, [componentData]);
 
   if (userError) {
     return (
@@ -63,24 +57,6 @@ export default function Component() {
     router.push("/@app");
     return;
   }
-
-  const handleChange = (evt: ContentEditableEvent) => {
-    setText(evt.target.value);
-  };
-
-  const handleBlur = async (e: FocusEvent) => {
-    if (!user) return;
-
-    console.log(
-      await updateComponent(
-        componentId as string,
-        { title: e.target.innerHTML },
-        user,
-        firestore,
-        storage
-      )
-    );
-  };
 
   return (
     <>
@@ -112,7 +88,9 @@ export default function Component() {
             user={user}
             tagName="h3"
           />
-          <span>Last edited _____</span>
+          <span>
+            Last edited {formatDate(componentData.data().lastUpdated)} ago
+          </span>
           <EditableFieldFirebase
             componentData={componentData}
             dataKey="content"

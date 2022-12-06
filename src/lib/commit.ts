@@ -4,7 +4,9 @@ import {
   collection,
   deleteDoc,
   doc,
+  FieldValue,
   Firestore,
+  serverTimestamp,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -52,7 +54,7 @@ export async function createComponent(
 
   const ref = addDoc(
     collection(firestore, `courseworks/${user.uid}/components`),
-    meta
+    { createdAt: serverTimestamp(), lastUpdated: serverTimestamp(), ...meta }
   );
 
   // upload images
@@ -85,7 +87,7 @@ export async function updateComponent(
 
   const ref = updateDoc(
     doc(firestore, `courseworks/${user.uid}/components/${componentId}`),
-    meta
+    { lastUpdated: serverTimestamp(), ...meta }
   );
 
   // todo: upload images
