@@ -1,5 +1,5 @@
-import { Button } from "@geist-ui/core";
-import { Eye } from "@geist-ui/icons";
+import { Button, Text } from "@geist-ui/core";
+import { Eye, PenTool } from "@geist-ui/icons";
 import { User } from "firebase/auth";
 import { DocumentData, Firestore } from "firebase/firestore";
 import { FirebaseStorage } from "firebase/storage";
@@ -140,10 +140,14 @@ export function EditableFieldMarkdownFirebase(props: {
 
   return (
     <div>
-      <div>
-        <Button onClick={() => setPreviewMode(!previewMode)} icon={<Eye />}>
-          {previewMode ? "Edit" : "Preview"}
-        </Button>
+      <div className={editablefieldStyles.header}>
+        <h3>Content</h3>
+        <Button
+          onClick={() => setPreviewMode(!previewMode)}
+          icon={previewMode ? <PenTool /> : <Eye />}
+          type={previewMode ? "success" : "default"}
+          width="1em"
+        ></Button>
       </div>
       {previewMode ? (
         <>

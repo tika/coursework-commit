@@ -2,3 +2,18 @@
   content: "No text";
   color: #999999;
 }
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #fafafa;
+  align-items: center;
+  border-radius: 1em;
+  padding: 1em;
+  margin-top: 5em;
+}
+
+.header > h3 {
+  margin: 0;
+}
