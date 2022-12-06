@@ -2,6 +2,7 @@ import { User } from "firebase/auth";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   Firestore,
   setDoc,
@@ -90,4 +91,21 @@ export async function updateComponent(
   // todo: upload images
 
   return ref;
+}
+
+// delete component
+export async function deleteComponent(
+  componentId: string,
+  user: User,
+  firestore: Firestore
+) {
+  const componentDoc = doc(
+    firestore,
+    `courseworks/${user.uid}/components/${componentId}`
+  );
+
+  // delete doc
+  deleteDoc(componentDoc);
+
+  return { success: true };
 }

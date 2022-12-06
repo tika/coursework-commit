@@ -12,13 +12,14 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import { app } from "../../lib/firebase";
 import { useRouter } from "next/router";
-import { FormEvent, useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { collection, doc, getFirestore } from "firebase/firestore";
 import { useCollection, useDocument } from "react-firebase-hooks/firestore";
 import appStyles from "../../styles/App.module.css";
 import { daysUntil } from "../../lib/dateutils";
-import { createCourseworkSection } from "../../lib/commit";
+import { createCourseworkSection, deleteComponent } from "../../lib/commit";
 import { getStorage } from "firebase/storage";
+import { Trash2 } from "@geist-ui/icons";
 
 const auth = getAuth(app);
 const firestore = getFirestore();
@@ -29,6 +30,7 @@ export default function App() {
   const [user, userLoading, userError] = useAuthState(auth);
   const title = useInput("");
   const due = useInput("");
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   const [courseworkData, courseworkLoading, error] = useDocument(
     doc(getFirestore(app), `courseworks/${user?.uid}`),
@@ -124,14 +126,25 @@ export default function App() {
               <div>
                 <Text h3>Your components</Text>
                 <div className={appStyles.components}>
-                  {componentsData.docs.map((doc) => (
+                  {componentsData.docs.map((doc, i) => (
                     <Card
                       key={doc.id}
                       hoverable
-                      onClick={() => router.push(`/@app/${doc.id}`)}
+                      onClick={(evt) => {
+                        if (evt.shiftKey) {
+                          // delete component
+                          deleteComponent(doc.id, user, firestore);
+                        } else {
+                          router.push(`/@app/${doc.id}`);
+                        }
+                      }}
+                      onMouseEnter={() => setHoveredCard(i)}
+                      onMouseLeave={() => setHoveredCard(null)}
                     >
-                      <Text h3>{doc.data().title}</Text>
-                      <Text>{doc.data().description}</Text>
+                      <div>
+                        <Text h3>{doc.data().title}</Text>
+                        <Text>{doc.data().description}</Text>
+                      </div>
                     </Card>
                   ))}
                 </div>

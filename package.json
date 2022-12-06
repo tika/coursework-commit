@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@geist-ui/core": "^2.3.8",
+    "@geist-ui/icons": "^1.0.2",
     "eslint": "8.28.0",
     "eslint-config-next": "13.0.5",
     "firebase": "^9.14.0",
