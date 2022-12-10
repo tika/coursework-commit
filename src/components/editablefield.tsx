@@ -1,4 +1,12 @@
-import { Button, Text } from "@geist-ui/core";
+import {
+  Button,
+  Card,
+  Fieldset,
+  Note,
+  Spacer,
+  Tabs,
+  Text,
+} from "@geist-ui/core";
 import { Eye, PenTool } from "@geist-ui/icons";
 import { User } from "firebase/auth";
 import { DocumentData, Firestore } from "firebase/firestore";
@@ -160,23 +168,15 @@ export function EditableFieldMarkdownFirebase(props: {
 
   return (
     <div>
-      <div className={editablefieldStyles.header}>
-        <h3>Content ({previewMode ? "previewing" : "editing"})</h3>
-        <Button
-          onClick={() => setPreviewMode(!previewMode)}
-          icon={previewMode ? <PenTool /> : <Eye />}
-          type={previewMode ? "success" : "default"}
-          width="1em"
-        ></Button>
-      </div>
-      {previewMode ? (
-        <>
-          <ReactMarkdown className={editablefieldStyles.md}>
-            {nl2br(text)}
-          </ReactMarkdown>
-        </>
-      ) : (
-        <>
+      <Tabs initialValue="1">
+        <Tabs.Item label="preview" value="1">
+          <Card>
+            <ReactMarkdown className={editablefieldStyles.md}>
+              {nl2br(text)}
+            </ReactMarkdown>
+          </Card>
+        </Tabs.Item>
+        <Tabs.Item label="edit" value="2">
           {props.tagName === "p" ? (
             <EditableArea state={[text, setText]} onFinish={submit} />
           ) : (
@@ -186,8 +186,8 @@ export function EditableFieldMarkdownFirebase(props: {
               onFinish={submit}
             />
           )}
-        </>
-      )}
+        </Tabs.Item>
+      </Tabs>
     </div>
   );
 }

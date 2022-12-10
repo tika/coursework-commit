@@ -144,11 +144,12 @@ export default function App() {
                   {courseworkData.data().createdAt.toDate().toLocaleString()}
                 </Text>
               </Text>
+              
               <div>
                 <Text h3>
                   Your components{" "}
                   {deleteMode && (
-                    <Text type="error" span>
+                    <Text type="error" >
                       (delete mode)
                     </Text>
                   )}
@@ -165,6 +166,9 @@ export default function App() {
                           router.push(`/@app/${doc.id}`);
                         }
                       }}
+                      type={
+                        deleteMode && hoveredCard === i ? "dark" : "default"
+                      }
                       onMouseEnter={() => setHoveredCard(i)}
                       onMouseLeave={() => setHoveredCard(null)}
                     >

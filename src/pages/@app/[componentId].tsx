@@ -76,16 +76,15 @@ export default function Component() {
         </Page>
       ) : (
         <Page>
-          <div>
-            <Link
-              href="/@app"
-              color
-              style={{ display: "flex", alignItems: "center" }}
-            >
-              <ArrowLeft scale={0.5} />
-              Go back
-            </Link>
-          </div>
+          <Link
+            href="/@app"
+            color
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <ArrowLeft scale={0.5} />
+            Go back
+          </Link>
+          <Spacer height={1} />
           <EditableFieldFirebase
             componentData={componentData}
             dataKey="title"
@@ -107,6 +106,7 @@ export default function Component() {
           <span>
             Last edited {formatDate(componentData.data().lastUpdated)} ago
           </span>
+          <Spacer height={1} />
           <EditableFieldMarkdownFirebase
             componentData={componentData}
             dataKey="content"
